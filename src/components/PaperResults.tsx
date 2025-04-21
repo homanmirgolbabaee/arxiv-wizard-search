@@ -1,11 +1,13 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Download } from 'lucide-react';
+import { FileText, Download, Edit } from 'lucide-react';
 import { ArxivPaper } from '@/types/arxiv';
+import { useNavigate } from 'react-router-dom';
 
 interface PaperResultsProps {
   papers: ArxivPaper[];
@@ -14,6 +16,8 @@ interface PaperResultsProps {
 }
 
 const PaperResults: React.FC<PaperResultsProps> = ({ papers, isLoading, error }) => {
+  const navigate = useNavigate();
+  
   const getPdfLink = (arxivLink: string) => {
     const arxivId = arxivLink.split('/abs/').pop();
     if (!arxivId) return null;
@@ -27,6 +31,45 @@ const PaperResults: React.FC<PaperResultsProps> = ({ papers, isLoading, error })
       arxivId: paper.link.split('/abs/').pop(),
       pdfUrl: pdfLink
     });
+  };
+
+  const navigateToEditor = (paper: ArxivPaper) => {
+    const arxivId = paper.link.split('/abs/').pop();
+    if (arxivId) {
+      navigate(`/pdf-editor/${arxivId}`, { 
+        state: { 
+          paper, 
+          pdfUrl: getPdfLink(paper.link)
+        }
+      });
+    }
+  };
+  
+  const downloadPdf = async (paper: ArxivPaper) => {
+    const pdfLink = getPdfLink(paper.link);
+    if (!pdfLink) return;
+    
+    try {
+      // Create a safe filename from the paper title
+      const fileName = `${paper.title.replace(/[^a-z0-9]/gi, '_').substring(0, 50)}.pdf`;
+      
+      // Create an anchor element and trigger download
+      const link = document.createElement('a');
+      link.href = pdfLink;
+      link.download = fileName;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.debug('Paper PDF downloaded:', {
+        title: paper.title,
+        fileName,
+        pdfUrl: pdfLink
+      });
+    } catch (error) {
+      console.error('Failed to download PDF:', error);
+    }
   };
 
   if (isLoading) {
@@ -106,7 +149,7 @@ const PaperResults: React.FC<PaperResultsProps> = ({ papers, isLoading, error })
                   {paper.summary}
                 </p>
               </CardContent>
-              <CardFooter className="flex justify-end gap-2 pt-2">
+              <CardFooter className="flex flex-wrap justify-end gap-2 pt-2">
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -119,20 +162,22 @@ const PaperResults: React.FC<PaperResultsProps> = ({ papers, isLoading, error })
                   </a>
                 </Button>
                 <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-1.5"
+                  onClick={() => downloadPdf(paper)}
+                >
+                  <Download className="h-4 w-4" />
+                  Download PDF
+                </Button>
+                <Button 
                   variant="default" 
                   size="sm" 
-                  asChild
                   className="gap-1.5"
-                  onClick={() => handlePdfClick(paper)}
+                  onClick={() => navigateToEditor(paper)}
                 >
-                  <a 
-                    href={getPdfLink(paper.link) || '#'} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download PDF
-                  </a>
+                  <Edit className="h-4 w-4" />
+                  Go to Editor
                 </Button>
               </CardFooter>
             </Card>
