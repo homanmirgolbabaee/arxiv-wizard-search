@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArxivPaper } from '@/types/arxiv';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,6 @@ const PdfEditor = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [annotationMode, setAnnotationMode] = useState(false);
-  const pdfContainerRef = useRef<HTMLDivElement>(null);
   
   // Get state from location or reconstruct it
   const state = location.state as LocationState | undefined;
@@ -265,7 +264,7 @@ const PdfEditor = () => {
                 </div>
               </Card>
               
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col" ref={pdfContainerRef}>
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col">
                 {pdfBlob ? (
                   <iframe 
                     src={`${pdfBlob}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
