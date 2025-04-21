@@ -1,12 +1,12 @@
-
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArxivPaper } from '@/types/arxiv';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Download, Pencil } from 'lucide-react';
+import { ArrowLeft, Download, Pencil, ExternalLink, FileText, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Progress } from '@/components/ui/progress';
 
 interface LocationState {
   paper: ArxivPaper;
@@ -18,13 +18,16 @@ const PdfEditor = () => {
   const location = useLocation();
   const { arxivId } = useParams<{ arxivId: string }>();
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [annotationMode, setAnnotationMode] = useState(false);
+  const pdfContainerRef = useRef<HTMLDivElement>(null);
   
   // Get state from location or reconstruct it
   const state = location.state as LocationState | undefined;
   const [paper] = useState<ArxivPaper | null>(state?.paper || null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(state?.pdfUrl || null);
+  const [pdfBlob, setPdfBlob] = useState<string | null>(null);
   
   useEffect(() => {
     // If we don't have the paper info from state, reconstruct the PDF URL
@@ -33,14 +36,56 @@ const PdfEditor = () => {
       setPdfUrl(constructedUrl);
     }
 
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-      toast.success('PDF loaded successfully');
-    }, 1500);
+    // Start loading animation
+    const loadingInterval = setInterval(() => {
+      setLoadingProgress(prev => {
+        const newProgress = prev + Math.random() * 10;
+        return newProgress > 90 ? 90 : newProgress;
+      });
+    }, 300);
+
+    // Load the PDF
+    if (pdfUrl) {
+      fetchPdf(pdfUrl);
+    }
     
-    return () => clearTimeout(timer);
+    return () => clearInterval(loadingInterval);
   }, [arxivId, pdfUrl]);
+
+  const fetchPdf = async (url: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        // Using no-cors as a fallback might not work for PDF rendering
+        // but we'll try the normal request first
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+      }
+      
+      const blob = await response.blob();
+      const pdfObjectUrl = URL.createObjectURL(blob);
+      setPdfBlob(pdfObjectUrl);
+      setLoadingProgress(100);
+      
+      // Add a small delay to simulate completion
+      setTimeout(() => {
+        setLoading(false);
+        toast.success('PDF loaded successfully');
+      }, 500);
+      
+    } catch (err) {
+      console.error('Error loading PDF:', err);
+      setError('Unable to load PDF directly from arXiv. Try opening in a new tab.');
+      setLoading(false);
+      toast.error('Error loading PDF');
+    }
+  };
 
   const goBack = () => {
     navigate('/');
@@ -48,8 +93,14 @@ const PdfEditor = () => {
 
   const toggleAnnotationMode = () => {
     setAnnotationMode(!annotationMode);
-    console.log("Annotation mode toggled");
-    toast.info("Annotation mode toggled");
+    toast.info(annotationMode ? "Annotation mode disabled" : "Annotation mode enabled");
+  };
+
+  const retryLoading = () => {
+    if (pdfUrl) {
+      setLoadingProgress(0);
+      fetchPdf(pdfUrl);
+    }
   };
 
   const downloadPdf = async () => {
@@ -61,19 +112,35 @@ const PdfEditor = () => {
         ? `${paper.title.replace(/[^a-z0-9]/gi, '_').substring(0, 50)}.pdf`
         : `arxiv_${arxivId}.pdf`;
       
-      // Create an anchor element and trigger download
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = fileName;
-      link.target = '_blank';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // If we already have the blob, use it directly
+      if (pdfBlob) {
+        const link = document.createElement('a');
+        link.href = pdfBlob;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        // Otherwise, create a link to the original URL
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.download = fileName;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
       
       toast.success('PDF download started');
     } catch (error) {
       console.error('Failed to download PDF:', error);
       toast.error('Failed to download PDF');
+    }
+  };
+
+  const openInNewTab = () => {
+    if (pdfUrl) {
+      window.open(pdfUrl, '_blank');
     }
   };
 
@@ -111,6 +178,16 @@ const PdfEditor = () => {
               <Download className="h-4 w-4" />
               Download PDF
             </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={openInNewTab}
+              className="flex items-center gap-1.5"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Open in New Tab
+            </Button>
           </div>
         </div>
       </header>
@@ -118,16 +195,32 @@ const PdfEditor = () => {
       <main className="container mx-auto px-4 py-6 flex-1 flex flex-col">
         <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col">
           {loading ? (
-            <Card className="flex items-center justify-center p-12 flex-1">
-              <div className="text-center">
+            <Card className="flex flex-col items-center justify-center p-12 flex-1">
+              <div className="text-center mb-4">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] mb-4"></div>
                 <p>Loading PDF...</p>
+              </div>
+              <div className="w-full max-w-md">
+                <Progress value={loadingProgress} className="h-2" />
               </div>
             </Card>
           ) : error ? (
             <Card className="p-6 text-center">
+              <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
               <p className="text-red-500 mb-4">{error}</p>
-              <Button onClick={goBack}>Return to Search</Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button onClick={retryLoading} className="flex items-center gap-1.5">
+                  <RefreshCw className="h-4 w-4" />
+                  Retry
+                </Button>
+                <Button onClick={openInNewTab} variant="outline" className="flex items-center gap-1.5">
+                  <ExternalLink className="h-4 w-4" />
+                  Open in New Tab
+                </Button>
+                <Button onClick={goBack} variant="outline">
+                  Return to Search
+                </Button>
+              </div>
             </Card>
           ) : (
             <div className="space-y-4 flex-1 flex flex-col">
@@ -169,34 +262,21 @@ const PdfEditor = () => {
                       </div>
                     </SheetContent>
                   </Sheet>
-                  
-                  {pdfUrl && (
-                    <Button variant="outline" asChild>
-                      <a 
-                        href={pdfUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5"
-                      >
-                        Open in New Tab
-                      </a>
-                    </Button>
-                  )}
                 </div>
               </Card>
               
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col">
-                {pdfUrl ? (
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden flex-1 flex flex-col" ref={pdfContainerRef}>
+                {pdfBlob ? (
                   <iframe 
-                    src={`${pdfUrl}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
+                    src={`${pdfBlob}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`}
                     className="w-full flex-1 min-h-[75vh]" 
                     title="PDF Viewer"
-                    sandbox="allow-scripts allow-same-origin allow-forms"
+                    sandbox="allow-scripts allow-same-origin"
                     loading="eager"
                   />
                 ) : (
                   <div className="p-12 text-center flex-1 flex items-center justify-center">
-                    <p>No PDF URL available</p>
+                    <p>No PDF available to display</p>
                   </div>
                 )}
               </div>
