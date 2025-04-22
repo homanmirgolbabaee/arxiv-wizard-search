@@ -4,6 +4,7 @@
 import { Toolhouse } from '@toolhouseai/sdk';
 import OpenAI from 'openai';
 import { getStoredApiKeys } from './apiKeyService';
+import { testAnthropicApiKey } from './anthropicService';
 
 /**
  * Process a URL with Toolhouse and OpenAI
@@ -19,7 +20,7 @@ export const processUrlWithToolhouse = async (url: string) => {
       throw new Error('API keys not configured. Please set up your API keys first.');
     }
     
-    console.log(`Processing URL: ${url}`);
+    console.log(`Processing URL with OpenAI: ${url}`);
     
     // Initialize Toolhouse SDK with user's API key
     const toolhouse = new Toolhouse({
@@ -42,8 +43,7 @@ export const processUrlWithToolhouse = async (url: string) => {
     // Initial message to get page contents and summarize
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [{
       "role": "user",
-      "content": `Get the contents of https://toolhouse.ai and summarize them in a few bullet points.
-      `,
+      "content": `Get the contents of ${url} and summarize them in a few bullet points.`,
     }];
 
     // Get available tools from Toolhouse
@@ -86,9 +86,10 @@ export const processUrlWithToolhouse = async (url: string) => {
  * Test API keys to verify they work
  * @param toolhouseApiKey Toolhouse API key
  * @param openaiApiKey OpenAI API key
+ * @param anthropicApiKey Optional Anthropic API key
  * @returns Promise that resolves to true if keys are valid
  */
-export const testApiKeys = async (toolhouseApiKey: string, openaiApiKey: string) => {
+export const testApiKeys = async (toolhouseApiKey: string, openaiApiKey: string, anthropicApiKey?: string) => {
   try {
     // Initialize Toolhouse SDK with provided API key
     const toolhouse = new Toolhouse({
@@ -111,7 +112,15 @@ export const testApiKeys = async (toolhouseApiKey: string, openaiApiKey: string)
     // Try a simple OpenAI completion to verify the key
     const model = await openai.models.retrieve('gpt-4o-mini');
     
-    // If we made it here, both keys are valid
+    // If anthropic key is provided, test it too
+    if (anthropicApiKey) {
+      const anthropicResult = await testAnthropicApiKey(anthropicApiKey);
+      if (!anthropicResult.valid) {
+        return { valid: false, message: anthropicResult.message };
+      }
+    }
+    
+    // If we made it here, all provided keys are valid
     return { valid: true, message: 'API keys verified successfully!' };
   } catch (error) {
     console.error('API key validation error:', error);

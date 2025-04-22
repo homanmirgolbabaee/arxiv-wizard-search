@@ -10,17 +10,22 @@ import { ChevronDown, Search, SlidersHorizontal, Globe, FileText } from 'lucide-
 import { formatSearchQuery } from '@/services/arxivService';
 import { SearchField, BooleanOperator } from '@/types/arxiv';
 import { toast } from 'sonner';
+import { HelpTooltip } from './HelpTooltip';
 
 interface SearchFormProps {
   onSearch: (query: string, maxResults: number) => void;
   placeholder?: string;
   hideAdvanced?: boolean;
+  aiProvider?: 'openai' | 'anthropic';
+  onAiProviderChange?: (provider: 'openai' | 'anthropic') => void;
 }
 
 const SearchForm: React.FC<SearchFormProps> = ({ 
   onSearch, 
   placeholder = 'Search arXiv papers...', 
-  hideAdvanced = false 
+  hideAdvanced = false,
+  aiProvider = 'openai',
+  onAiProviderChange
 }) => {
   const [keywords, setKeywords] = useState('');
   const [field, setField] = useState<SearchField>('all');

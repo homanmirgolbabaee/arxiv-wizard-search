@@ -28,9 +28,11 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({
 }) => {
   const [toolhouseApiKey, setToolhouseApiKey] = useState('');
   const [openaiApiKey, setOpenaiApiKey] = useState('');
+  const [anthropicApiKey, setAnthropicApiKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showToolhouseKey, setShowToolhouseKey] = useState(false);
   const [showOpenAIKey, setShowOpenAIKey] = useState(false);
+  const [showAnthropicKey, setShowAnthropicKey] = useState(false);
   const [validationStatus, setValidationStatus] = useState<{
     valid: boolean;
     message: string;
@@ -43,6 +45,7 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({
       const savedKeys = getStoredApiKeys();
       setToolhouseApiKey(savedKeys.toolhouseApiKey);
       setOpenaiApiKey(savedKeys.openaiApiKey);
+      setAnthropicApiKey(savedKeys.anthropicApiKey);
     }
   }, [open]);
 
@@ -50,7 +53,8 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({
     // First validate the format
     const formatValidation = validateApiKeyFormat({ 
       toolhouseApiKey, 
-      openaiApiKey 
+      openaiApiKey,
+      anthropicApiKey
     });
     
     if (!formatValidation.valid) {
@@ -75,7 +79,7 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({
       
       if (testResult.valid) {
         // Save keys if validation passed
-        saveApiKeys({ toolhouseApiKey, openaiApiKey });
+        saveApiKeys({ toolhouseApiKey, openaiApiKey, anthropicApiKey });
         setValidationStatus({
           valid: true,
           message: testResult.message,
@@ -117,7 +121,7 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({
             Configure API Keys
           </DialogTitle>
           <DialogDescription>
-            Set up your Toolhouse and OpenAI API keys to use the URL processor.
+            Set up your API keys to use all the features of the application.
           </DialogDescription>
         </DialogHeader>
         
@@ -189,6 +193,41 @@ const ApiKeyDialog: React.FC<ApiKeyDialogProps> = ({
             </div>
             <p className="text-sm text-muted-foreground">
               The API key for OpenAI. Should start with "sk-".
+            </p>
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="anthropic-api-key" className="text-left">
+              Anthropic API Key
+            </Label>
+            <div className="relative">
+              <Input
+                id="anthropic-api-key"
+                type={showAnthropicKey ? "text" : "password"}
+                placeholder="sk-ant-..."
+                value={anthropicApiKey}
+                onChange={(e) => setAnthropicApiKey(e.target.value)}
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full w-10 px-3"
+                onClick={() => setShowAnthropicKey(!showAnthropicKey)}
+              >
+                {showAnthropicKey ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                <span className="sr-only">
+                  {showAnthropicKey ? "Hide" : "Show"} Anthropic API key
+                </span>
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              The API key for Anthropic. Should start with "sk-ant-". <span className="italic">(Optional)</span>
             </p>
           </div>
           
