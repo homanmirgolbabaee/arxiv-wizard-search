@@ -47,7 +47,11 @@ export const processUrl = async (url: string) => {
     // Initial message to get page contents and summarize
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [{
       "role": "user",
-      "content": `Get the contents of ${url} and summarize them in a few bullet points.`,
+      "content": `Get the contents of following documentation from ${url} and summarize them in a few bullet points.
+      IMPORTANT: format everything in JSON format for a fun quiz:
+      EXAMPLE: {"title": content, "question": content, "options": content , "answer": content}
+      IMPORTANT: do not include any other text ANYTHING, JUST the JSON object.
+      `,
     }];
 
     // Get available tools from Toolhouse
