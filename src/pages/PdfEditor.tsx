@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArxivPaper } from '@/types/arxiv';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Download, Pencil, ExternalLink, FileText, Globe } from 'lucide-react';
+import { ArrowLeft, Download, Pencil, ExternalLink, FileText, Globe, Bot, Scissors } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import TextAnalyzer from '@/components/TextAnalyzer';
+import { areApiKeysConfigured } from '@/services/apiKeyService';
+import ApiKeyDialog from '@/components/ApiKeyDialog';
 
 interface LocationState {
   paper: ArxivPaper;
@@ -27,6 +30,20 @@ const PdfEditor = () => {
   
   // Google Docs viewer URL
   const [viewerUrl, setViewerUrl] = useState<string | null>(null);
+
+  // Text analysis state
+  const [isAnalyzerOpen, setIsAnalyzerOpen] = useState(false);
+  const [keysConfigured, setKeysConfigured] = useState(false);
+  const [isApiKeyDialogOpen, setIsApiKeyDialogOpen] = useState(false);
+  
+  // Ref for iframe to potentially handle messages from it
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  
+  useEffect(() => {
+    // Check if API keys are configured
+    const configured = areApiKeysConfigured();
+    setKeysConfigured(configured);
+  }, []);
   
   useEffect(() => {
     // Check if we're in URL mode - if the ID is a URL
@@ -116,8 +133,38 @@ const PdfEditor = () => {
     }
   };
 
+  const handleAnalyzeText = () => {
+    // Check if API keys are configured first
+    if (!keysConfigured) {
+      toast.error('API keys are required for text analysis');
+      setIsApiKeyDialogOpen(true);
+      return;
+    }
+    
+    // Open the text analyzer
+    setIsAnalyzerOpen(true);
+    
+    // Instruct the user how to use it
+    toast.info('Select text from the PDF, copy it, and paste it in the analyzer', {
+      duration: 5000,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* API Key Configuration Dialog */}
+      <ApiKeyDialog 
+        open={isApiKeyDialogOpen} 
+        onOpenChange={setIsApiKeyDialogOpen}
+        onKeysConfigured={() => setKeysConfigured(true)}
+      />
+      
+      {/* Text Analyzer Component */}
+      <TextAnalyzer 
+        isOpen={isAnalyzerOpen} 
+        onClose={() => setIsAnalyzerOpen(false)} 
+      />
+      
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center">
@@ -156,6 +203,16 @@ const PdfEditor = () => {
             <Button 
               variant="outline" 
               size="sm" 
+              onClick={handleAnalyzeText}
+              className="flex items-center gap-1.5"
+            >
+              <Bot className="h-4 w-4" />
+              Analyze Text
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
               onClick={downloadPdf}
               className="flex items-center gap-1.5"
             >
@@ -180,43 +237,32 @@ const PdfEditor = () => {
         <div className="max-w-5xl mx-auto w-full flex-1 flex flex-col">
           <div className="space-y-4 flex-1 flex flex-col">
             <Card className="p-4">
-              <div className="flex flex-wrap justify-center gap-4 mb-0">
-                <Button 
-                  variant={annotationMode ? "default" : "secondary"} 
-                  onClick={toggleAnnotationMode}
-                  className="flex items-center gap-1.5"
-                >
-                  <Pencil className="h-4 w-4" />
-                  {annotationMode ? "Exit Annotation Mode" : "Enable Annotations"}
-                </Button>
+              <div className="flex flex-wrap justify-between gap-4 mb-0">
+                <div className="flex gap-2">
+                  <Button 
+                    variant={annotationMode ? "default" : "secondary"} 
+                    onClick={toggleAnnotationMode}
+                    className="flex items-center gap-1.5"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    {annotationMode ? "Exit Annotation Mode" : "Enable Annotations"}
+                  </Button>
+                </div>
                 
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline">Annotation Tools</Button>
-                  </SheetTrigger>
-                  <SheetContent side="right">
-                    <div className="space-y-4 pt-6">
-                      <h3 className="font-medium text-lg">Annotation Tools</h3>
-                      <p className="text-muted-foreground">
-                        Select a tool to annotate the content.
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        <Button variant="outline" className="justify-start">
-                          Highlight
-                        </Button>
-                        <Button variant="outline" className="justify-start">
-                          Underline
-                        </Button>
-                        <Button variant="outline" className="justify-start">
-                          Comment
-                        </Button>
-                        <Button variant="outline" className="justify-start">
-                          Draw
-                        </Button>
-                      </div>
-                    </div>
-                  </SheetContent>
-                </Sheet>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-muted-foreground hidden sm:block">
+                    Need help? Select text, copy it (Ctrl+C), and click the "Analyze Text" button.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleAnalyzeText}
+                    className="flex items-center gap-1.5"
+                  >
+                    <Scissors className="h-4 w-4" />
+                    Extract & Analyze
+                  </Button>
+                </div>
               </div>
             </Card>
             
@@ -224,6 +270,7 @@ const PdfEditor = () => {
               {viewerUrl ? (
                 <>
                   <iframe 
+                    ref={iframeRef}
                     src={viewerUrl}
                     className="w-full flex-1 min-h-[75vh] border-0"
                     frameBorder="0"
