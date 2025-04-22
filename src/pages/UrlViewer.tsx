@@ -9,6 +9,7 @@ import { areApiKeysConfigured } from '@/services/apiKeyService';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ApiKeyDialog from '@/components/ApiKeyDialog';
+import FlashCardContainer from '@/components/FlashCardContainer';
 
 const UrlViewer = () => {
   const navigate = useNavigate();
@@ -101,8 +102,8 @@ const UrlViewer = () => {
 
   // Extract summary from the response
   const getSummary = () => {
-    if (!result || result.error) return "No summary available";
-    return result.summary || "No summary available";
+    if (!result || result.error) return null;
+    return result.summary || null;
   };
 
   return (
@@ -129,10 +130,10 @@ const UrlViewer = () => {
             <div>
               <h1 className="text-xl font-bold flex items-center">
                 <Globe className="h-5 w-5 mr-2" />
-                URL Processor
+                URL Quiz Generator
               </h1>
               <p className="text-sm text-muted-foreground">
-                Process any web URL with OpenAI
+                Generate quiz questions from any URL
               </p>
             </div>
           </div>
@@ -167,7 +168,7 @@ const UrlViewer = () => {
                   type="submit" 
                   disabled={isLoading || !url.trim() || !keysConfigured}
                 >
-                  {isLoading ? 'Processing...' : 'Process'}
+                  {isLoading ? 'Processing...' : 'Generate Quiz'}
                 </Button>
               </form>
               
@@ -187,7 +188,7 @@ const UrlViewer = () => {
               <CardContent className="py-8">
                 <div className="flex flex-col items-center justify-center">
                   <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] mb-4"></div>
-                  <p>Processing URL with OpenAI...</p>
+                  <p>Generating quiz questions...</p>
                   <p className="text-sm text-muted-foreground mt-2">This may take a few moments.</p>
                 </div>
               </CardContent>
@@ -195,36 +196,43 @@ const UrlViewer = () => {
           )}
           
           {result && !result.error && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Processing Result</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="summary">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="summary">Summary</TabsTrigger>
-                    <TabsTrigger value="raw">Raw Data</TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="summary" className="p-4 border rounded-md">
-                    <div className="prose max-w-none">
-                      <h3 className="text-xl font-medium mb-4">URL Summary</h3>
-                      <div className="whitespace-pre-wrap">
-                        {getSummary()}
+            <div className="space-y-8">
+              <Tabs defaultValue="flashcards">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="flashcards">Flash Cards</TabsTrigger>
+                  <TabsTrigger value="raw">Raw Data</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="flashcards">
+                  <FlashCardContainer jsonData={getSummary()} />
+                </TabsContent>
+                
+                <TabsContent value="raw">
+                  <Card>
+                    <CardContent className="p-4 mt-4">
+                      <div className="bg-muted rounded-md overflow-auto max-h-[50vh] p-4">
+                        <pre className="whitespace-pre-wrap text-xs">
+                          {getSummary()}
+                        </pre>
                       </div>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="raw">
-                    <div className="p-4 bg-muted rounded-md overflow-auto max-h-[50vh]">
-                      <pre className="whitespace-pre-wrap text-xs">
-                        {JSON.stringify(result, null, 2)}
-                      </pre>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CardContent>
-              <CardFooter className="flex gap-2">
+                      <div className="flex justify-end mt-4">
+                        <Button
+                          variant="outline"
+                          onClick={() => copyToClipboard(getSummary() || '')}
+                          className="flex items-center gap-1.5"
+                        >
+                          {copied ? 
+                            <><CheckCircle2 className="h-4 w-4" /> Copied</> : 
+                            <><Copy className="h-4 w-4" /> Copy JSON</>
+                          }
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+
+              <div className="flex justify-between">
                 <Button 
                   variant="outline" 
                   onClick={openUrl}
@@ -233,18 +241,8 @@ const UrlViewer = () => {
                   <ExternalLink className="h-4 w-4" />
                   Open URL in New Tab
                 </Button>
-                <Button
-                  variant="default"
-                  onClick={() => copyToClipboard(JSON.stringify(result, null, 2))}
-                  className="flex items-center gap-1.5"
-                >
-                  {copied ? 
-                    <><CheckCircle2 className="h-4 w-4" /> Copied</> : 
-                    <><Copy className="h-4 w-4" /> Copy Result</>
-                  }
-                </Button>
-              </CardFooter>
-            </Card>
+              </div>
+            </div>
           )}
           
           {result && result.error && (
@@ -286,7 +284,7 @@ const UrlViewer = () => {
       
       <footer className="py-6 border-t">
         <div className="container mx-auto px-4 text-center text-sm text-gray-500">
-          URL Processor | OpenAI GPT Integration
+          URL Quiz Generator | Created with OpenAI GPT
         </div>
       </footer>
     </div>

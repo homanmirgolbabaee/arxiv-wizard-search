@@ -48,9 +48,23 @@ export const processUrl = async (url: string) => {
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [{
       "role": "user",
       "content": `Get the contents of following documentation from ${url} and summarize them in a few bullet points.
-      IMPORTANT: format everything in JSON format for a fun quiz:
-      EXAMPLE: {"title": content, "question": content, "options": content , "answer": content}
-      IMPORTANT: do not include any other text ANYTHING, JUST the JSON object.
+      IMPORTANT: format everything in JSON format for a fun quiz with an array of quiz objects:
+      EXAMPLE: 
+      [
+        {
+          "title": "Quiz Topic", 
+          "question": "What is the question?", 
+          "options": ["Option 1", "Option 2", "Option 3", "Option 4"], 
+          "answer": "Option 2"
+        },
+        {
+          "title": "Another Topic", 
+          "question": "What is another question?", 
+          "options": ["Option 1", "Option 2", "Option 3", "Option 4"], 
+          "answer": "Option 3"
+        }
+      ]
+      IMPORTANT: Make sure to wrap all quiz objects in array brackets [] and format as valid JSON.
       `,
     }];
 
