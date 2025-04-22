@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, Globe, ExternalLink, Copy, CheckCircle2, Key } from 'lucide-react';
-import { processUrlWithToolhouse } from '@/services/toolhouseService';
-import { processUrlWithAnthropic } from '@/services/anthropicService';
+import { processUrl } from '@/services/toolhouseService';
 import { areApiKeysConfigured, getStoredApiKeys } from '@/services/apiKeyService';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -100,11 +99,7 @@ const UrlViewer = () => {
       let response;
       
       // Process the URL with the selected AI provider
-      if (aiProvider === 'anthropic') {
-        response = await processUrlWithAnthropic(processedUrl);
-      } else {
-        response = await processUrlWithToolhouse(processedUrl);
-      }
+      response = await processUrl(processedUrl, aiProvider);
       
       // Set the result
       setResult(response);
