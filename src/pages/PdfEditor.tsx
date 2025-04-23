@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArxivPaper } from '@/types/arxiv';
 import { Button } from '@/components/ui/button';
 import { 
-  ArrowLeft, Bot, Loader2, Copy, X, VolumeIcon, CheckCircle
+  ArrowLeft, Bot, Loader2, Copy, X, VolumeIcon, CheckCircle, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { areApiKeysConfigured } from '@/services/apiKeyService';
@@ -35,7 +35,7 @@ const PdfEditor = () => {
   const [selectedText, setSelectedText] = useState('');
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
+  const [showAnalysisPanel, setShowAnalysisPanel] = useState(true); // Panel shown by default
   const [analysisCompleted, setAnalysisCompleted] = useState(false);
   
   // API key state
@@ -101,9 +101,10 @@ const PdfEditor = () => {
         console.log('Text selected:', selectedStr.substring(0, 50) + '...');
         setSelectedText(selectedStr);
         
-        // Only show toast if analyzing panel is not already open
+        // Make sure the analysis panel is open if text is selected
         if (!showAnalysisPanel) {
-          toast.info('Text selected! Click "Analyze Selection" to analyze.');
+          setShowAnalysisPanel(true);
+          toast.info('Text selected! Click "Analyze Text" to analyze.');
         }
       }
     };
@@ -165,13 +166,6 @@ const PdfEditor = () => {
   // Toggle analysis panel
   const toggleAnalysisPanel = () => {
     setShowAnalysisPanel(!showAnalysisPanel);
-    // Don't auto-populate text if panel is closing
-    if (!showAnalysisPanel && !selectedText) {
-      setTimeout(() => {
-        // Small timeout to avoid flicker
-        setSelectedText('Please select text from the PDF or paste it here manually.');
-      }, 100);
-    }
   };
 
   const copyToClipboard = (text: string) => {
@@ -235,33 +229,13 @@ const PdfEditor = () => {
           
           <div className="flex items-center gap-2">
             <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleAnalyzeText}
-              disabled={isAnalyzing || !selectedText}
-              className="flex items-center gap-1.5"
-            >
-              {isAnalyzing ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                <>
-                  <Bot className="h-4 w-4" />
-                  Analyze Selection
-                </>
-              )}
-            </Button>
-            
-            <Button 
-              variant="default" 
+              variant={showAnalysisPanel ? "default" : "outline"}
               size="sm" 
               onClick={toggleAnalysisPanel}
               className="flex items-center gap-1.5"
             >
               <Bot className="h-4 w-4" />
-              Open Analysis Panel
+              {showAnalysisPanel ? "Hide Analysis Panel" : "Show Analysis Panel"}
             </Button>
           </div>
         </div>
@@ -362,7 +336,7 @@ const PdfEditor = () => {
                         value={selectedText} 
                         onChange={handleTextAreaChange}
                         onClick={(e) => e.stopPropagation()} // Prevent selection loss
-                        placeholder="Paste or type the text you want to analyze..."
+                        placeholder="Please select text from the PDF or paste it here manually."
                         className="min-h-[100px]"
                       />
                     </div>
@@ -420,7 +394,7 @@ const PdfEditor = () => {
               )}
             </div>
             
-            {/* Open Analysis Panel Button at the bottom - for mobile view */}
+            {/* Show Analysis Panel Button at the bottom - for mobile view */}
             {!showAnalysisPanel && (
               <div className="flex justify-center sm:hidden">
                 <Button 
@@ -429,7 +403,7 @@ const PdfEditor = () => {
                   className="gap-1.5"
                 >
                   <Bot className="h-4 w-4" />
-                  Open Analysis Panel
+                  Show Analysis Panel
                 </Button>
               </div>
             )}
