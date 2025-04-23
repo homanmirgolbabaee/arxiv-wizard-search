@@ -1,16 +1,18 @@
 /**
  * API Key Management Service
- * Handles storage and validation of API keys for Toolhouse and OpenAI
+ * Handles storage and validation of API keys for Toolhouse, OpenAI, and ElevenLabs
  */
 
 // Local storage keys
 const TOOLHOUSE_API_KEY_STORAGE = 'arxiv-wizard-toolhouse-api-key';
 const OPENAI_API_KEY_STORAGE = 'arxiv-wizard-openai-api-key';
+const ELEVENLABS_API_KEY_STORAGE = 'elevenlabs-api-key'; // This should match the key used in the original code
 
 // Type for API keys
 export interface ApiKeys {
   toolhouseApiKey: string;
   openaiApiKey: string;
+  elevenLabsApiKey: string;
 }
 
 /**
@@ -18,12 +20,13 @@ export interface ApiKeys {
  */
 export const getStoredApiKeys = (): ApiKeys => {
   if (typeof window === 'undefined') {
-    return { toolhouseApiKey: '', openaiApiKey: '' };
+    return { toolhouseApiKey: '', openaiApiKey: '', elevenLabsApiKey: '' };
   }
   
   return {
     toolhouseApiKey: localStorage.getItem(TOOLHOUSE_API_KEY_STORAGE) || '',
-    openaiApiKey: localStorage.getItem(OPENAI_API_KEY_STORAGE) || ''
+    openaiApiKey: localStorage.getItem(OPENAI_API_KEY_STORAGE) || '',
+    elevenLabsApiKey: sessionStorage.getItem(ELEVENLABS_API_KEY_STORAGE) || ''
   };
 };
 
@@ -35,6 +38,18 @@ export const saveApiKeys = (keys: ApiKeys): void => {
   
   localStorage.setItem(TOOLHOUSE_API_KEY_STORAGE, keys.toolhouseApiKey);
   localStorage.setItem(OPENAI_API_KEY_STORAGE, keys.openaiApiKey);
+  if (keys.elevenLabsApiKey) {
+    sessionStorage.setItem(ELEVENLABS_API_KEY_STORAGE, keys.elevenLabsApiKey);
+  }
+};
+
+/**
+ * Save ElevenLabs API key to session storage
+ */
+export const saveElevenLabsApiKey = (apiKey: string): void => {
+  if (typeof window === 'undefined') return;
+  
+  sessionStorage.setItem(ELEVENLABS_API_KEY_STORAGE, apiKey);
 };
 
 /**
@@ -45,6 +60,7 @@ export const clearApiKeys = (): void => {
   
   localStorage.removeItem(TOOLHOUSE_API_KEY_STORAGE);
   localStorage.removeItem(OPENAI_API_KEY_STORAGE);
+  sessionStorage.removeItem(ELEVENLABS_API_KEY_STORAGE);
 };
 
 /**
@@ -80,4 +96,11 @@ export const validateApiKeyFormat = (keys: ApiKeys): { valid: boolean; message: 
 export const areApiKeysConfigured = (): boolean => {
   const keys = getStoredApiKeys();
   return !!keys.toolhouseApiKey && !!keys.openaiApiKey;
+};
+
+/**
+ * Check if ElevenLabs API key is configured
+ */
+export const isElevenLabsApiKeyConfigured = (): boolean => {
+  return !!sessionStorage.getItem(ELEVENLABS_API_KEY_STORAGE);
 };

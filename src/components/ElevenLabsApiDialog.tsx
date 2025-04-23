@@ -12,7 +12,6 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { saveElevenLabsApiKey, getStoredApiKeys } from '@/services/apiKeyService';
-import { elevenLabsService } from '@/services/elevenLabsService';
 import { toast } from 'sonner';
 import { Key, Eye, EyeOff } from 'lucide-react';
 
@@ -50,7 +49,6 @@ const ElevenLabsApiDialog: React.FC<ElevenLabsApiDialogProps> = ({
     try {
       // Save the API key
       saveElevenLabsApiKey(apiKey);
-      elevenLabsService.setApiKey(apiKey);
       
       // Show success message
       toast.success('ElevenLabs API key saved successfully');

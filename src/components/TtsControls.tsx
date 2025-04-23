@@ -3,9 +3,7 @@ import { Button } from '@/components/ui/button';
 import { VolumeIcon, Volume2Icon, StopCircleIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { textToSpeech, playAudio, stopAudio, isElevenLabsConfigured } from '@/services/textToSpeechService';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import ApiKeyDialog from '@/components/ApiKeyDialog';
 
 interface TtsControlsProps {
   text: string;
@@ -25,7 +23,6 @@ const TtsControls: React.FC<TtsControlsProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showApiKeyDialog, setShowApiKeyDialog] = useState(false);
-  const [apiKey, setApiKey] = useState('');
   
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
@@ -70,24 +67,6 @@ const TtsControls: React.FC<TtsControlsProps> = ({
     }
   };
   
-  const saveApiKey = () => {
-    if (!apiKey.trim()) {
-      toast.error('Please enter a valid API key');
-      return;
-    }
-    
-    try {
-      sessionStorage.setItem('elevenlabs-api-key', apiKey);
-      setShowApiKeyDialog(false);
-      toast.success('ElevenLabs API key saved');
-      
-      // Try TTS again
-      handleTtsClick();
-    } catch (error) {
-      toast.error('Failed to save API key');
-    }
-  };
-  
   return (
     <>
       <Button
@@ -108,38 +87,14 @@ const TtsControls: React.FC<TtsControlsProps> = ({
       </Button>
       
       {/* API Key Dialog */}
-      <Dialog open={showApiKeyDialog} onOpenChange={setShowApiKeyDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>ElevenLabs API Key Required</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="apiKey">
-                Enter your ElevenLabs API key
-              </Label>
-              <Input
-                id="apiKey"
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Enter your ElevenLabs API key"
-              />
-              <p className="text-sm text-muted-foreground">
-                You can get your API key from the <a href="https://elevenlabs.io/app" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">ElevenLabs dashboard</a>
-              </p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setShowApiKeyDialog(false)}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={saveApiKey}>
-              Save API Key
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ApiKeyDialog 
+        open={showApiKeyDialog} 
+        onOpenChange={setShowApiKeyDialog}
+        onKeysConfigured={() => {
+          // Try TTS again after keys are configured
+          handleTtsClick();
+        }}
+      />
     </>
   );
 };
