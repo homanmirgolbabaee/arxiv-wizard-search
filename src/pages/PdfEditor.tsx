@@ -11,6 +11,7 @@ import ApiKeyDialog from '@/components/ApiKeyDialog';
 import { analyzeText } from '@/services/textAnalysisService';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import AnalysisResult from '@/components/AnalysisResult';
 
 interface LocationState {
   paper: ArxivPaper;
@@ -370,17 +371,8 @@ const PdfEditor = () => {
                           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
                           <p>Analyzing text...</p>
                         </div>
-                      ) : analysisResult ? (
-                        <div 
-                          className="p-4 bg-muted rounded-md whitespace-pre-wrap text-sm"
-                          onMouseDown={(e) => e.stopPropagation()} // Prevent selection loss
-                        >
-                          {analysisResult}
-                        </div>
                       ) : (
-                        <div className="p-4 text-center text-muted-foreground">
-                          <p>Analysis will appear here</p>
-                        </div>
+                        <AnalysisResult analysis={analysisResult} />
                       )}
                     </div>
                   </CardContent>
