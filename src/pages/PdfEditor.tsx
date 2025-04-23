@@ -3,15 +3,17 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArxivPaper } from '@/types/arxiv';
 import { Button } from '@/components/ui/button';
 import { 
-  ArrowLeft, Bot, Loader2, Copy, X, VolumeIcon, CheckCircle, ChevronLeft, ChevronRight
+  ArrowLeft, Bot, Loader2, Copy, X, CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { areApiKeysConfigured } from '@/services/apiKeyService';
 import ApiKeyDialog from '@/components/ApiKeyDialog';
 import { analyzeText } from '@/services/textAnalysisService';
+import { prepareTtsText } from '@/services/textToSpeechService';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import AnalysisResult from '@/components/AnalysisResult';
+import TtsControls from '@/components/TtsControls';
 
 interface LocationState {
   paper: ArxivPaper;
@@ -194,6 +196,12 @@ const PdfEditor = () => {
     setSelectedText(e.target.value);
   };
 
+  // Get the full text of the analysis for TTS
+  const getFullAnalysisText = () => {
+    if (!analysisResult) return '';
+    return prepareTtsText(analysisResult);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* API Key Configuration Dialog */}
@@ -298,15 +306,22 @@ const PdfEditor = () => {
                       <CardTitle className="text-lg flex items-center gap-2">
                         <Bot className="h-5 w-5" />
                         Text Analysis
+                        
+                        {analysisCompleted && (
+                          <div className="ml-2 text-green-600 text-xs flex items-center">
+                            <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                            Completed
+                          </div>
+                        )}
+                        
                         <div className="ml-auto flex items-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-muted-foreground hover:text-foreground transition-colors"
-                            title="Text-to-Speech (Coming Soon)"
-                          >
-                            <VolumeIcon className="h-4 w-4" />
-                          </Button>
+                          {analysisResult && (
+                            <TtsControls 
+                              text={getFullAnalysisText()} 
+                              tooltipText="Listen to full analysis"
+                              className="text-muted-foreground hover:text-foreground transition-colors mr-1"
+                            />
+                          )}
                         </div>
                       </CardTitle>
                       <Button
@@ -344,12 +359,6 @@ const PdfEditor = () => {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-medium">Analysis Result</p>
-                        {analysisCompleted && (
-                          <div className="flex items-center text-green-600 text-xs">
-                            <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                            Text analysis completed
-                          </div>
-                        )}
                       </div>
                       
                       {isAnalyzing ? (

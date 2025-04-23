@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import TtsControls from './TtsControls';
+import { prepareTtsText } from '@/services/textToSpeechService';
 
 interface AnalysisResultProps {
   analysis: string | null;
@@ -25,6 +27,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ analysis }) => {
           number={item.number}
           title={item.title}
           content={item.content}
+          fullText={prepareTtsText(item.content)}
           isInitiallyExpanded={index === 0} // First item expanded by default
         />
       ))}
@@ -36,6 +39,7 @@ interface ExpandableSectionProps {
   number: string;
   title: string;
   content: string;
+  fullText: string; // Plain text for TTS
   isInitiallyExpanded?: boolean;
 }
 
@@ -43,29 +47,41 @@ const ExpandableSection: React.FC<ExpandableSectionProps> = ({
   number, 
   title, 
   content,
+  fullText,
   isInitiallyExpanded = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(isInitiallyExpanded);
 
   return (
     <div className="rounded-md overflow-hidden border border-slate-200 bg-white">
-      <button 
-        className="w-full px-4 py-3 flex items-start gap-2 text-left hover:bg-slate-50 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
-      >
-        <div className="flex-shrink-0 mt-0.5 text-slate-500">
+      <div className="px-4 py-3 flex items-start gap-2">
+        <button 
+          className="flex-shrink-0 mt-0.5 text-slate-500 hover:text-slate-700 transition-colors"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
           {isExpanded ? (
             <ChevronDown className="h-4 w-4" />
           ) : (
             <ChevronRight className="h-4 w-4" />
           )}
-        </div>
+        </button>
         
-        <div className="flex gap-2">
-          <span className="font-medium text-slate-800">{number}</span>
-          <h3 className="font-bold text-slate-800">{title}</h3>
+        <div className="flex-1 flex justify-between items-start">
+          <button 
+            className="flex gap-2 text-left hover:text-slate-900 transition-colors"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            <span className="font-medium text-slate-800">{number}</span>
+            <h3 className="font-bold text-slate-800">{title}</h3>
+          </button>
+          
+          <TtsControls 
+            text={`${title}. ${fullText}`} 
+            tooltipText={`Listen to ${title}`}
+            className="ml-2 flex-shrink-0"
+          />
         </div>
-      </button>
+      </div>
       
       {isExpanded && (
         <div className="px-4 pb-4 pt-1">
