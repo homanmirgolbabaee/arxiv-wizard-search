@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface AnalysisResultProps {
   analysis: string | null;
@@ -17,19 +18,65 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ analysis }) => {
   const processedAnalysis = formatAnalysisText(analysis);
 
   return (
-    <div className="p-4 bg-slate-50 rounded-md text-sm">
+    <div className="space-y-2">
       {processedAnalysis.map((item, index) => (
-        <div key={index} className={`${index > 0 ? 'mt-6' : ''}`}>
-          <div className="flex gap-2">
-            <span className="font-medium text-slate-800">{item.number}</span>
-            <h3 className="font-bold text-slate-800">{item.title}</h3>
-          </div>
-          <div 
-            className="mt-1 ml-5 text-slate-700"
-            dangerouslySetInnerHTML={{ __html: processInnerContent(item.content) }}
-          />
-        </div>
+        <ExpandableSection
+          key={index} 
+          number={item.number}
+          title={item.title}
+          content={item.content}
+          isInitiallyExpanded={index === 0} // First item expanded by default
+        />
       ))}
+    </div>
+  );
+};
+
+interface ExpandableSectionProps {
+  number: string;
+  title: string;
+  content: string;
+  isInitiallyExpanded?: boolean;
+}
+
+const ExpandableSection: React.FC<ExpandableSectionProps> = ({ 
+  number, 
+  title, 
+  content,
+  isInitiallyExpanded = false
+}) => {
+  const [isExpanded, setIsExpanded] = useState(isInitiallyExpanded);
+
+  return (
+    <div className="rounded-md overflow-hidden border border-slate-200 bg-white">
+      <button 
+        className="w-full px-4 py-3 flex items-start gap-2 text-left hover:bg-slate-50 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex-shrink-0 mt-0.5 text-slate-500">
+          {isExpanded ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </div>
+        
+        <div className="flex gap-2">
+          <span className="font-medium text-slate-800">{number}</span>
+          <h3 className="font-bold text-slate-800">{title}</h3>
+        </div>
+      </button>
+      
+      {isExpanded && (
+        <div className="px-4 pb-4 pt-1">
+          <div className="ml-6 pl-4 border-l border-slate-200">
+            <div 
+              className="text-slate-700 text-sm"
+              dangerouslySetInnerHTML={{ __html: processInnerContent(content) }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -38,7 +85,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({ analysis }) => {
 function processInnerContent(content: string): string {
   // Process nested bullet points (lines starting with - or *)
   content = content.replace(/^(\s*[-*]\s+)(.*?)$/gm, (match, bullet, text) => {
-    return `<div class="flex"><span class="mr-2">${bullet}</span><span>${processBoldItalic(text)}</span></div>`;
+    return `<div class="flex py-1"><span class="mr-2 flex-shrink-0">${bullet}</span><span>${processBoldItalic(text)}</span></div>`;
   });
   
   // Process any remaining content that isn't part of a bullet point

@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArxivPaper } from '@/types/arxiv';
 import { Button } from '@/components/ui/button';
 import { 
-  ArrowLeft, Bot, Loader2, Copy, X, VolumeIcon
+  ArrowLeft, Bot, Loader2, Copy, X, VolumeIcon, CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { areApiKeysConfigured } from '@/services/apiKeyService';
@@ -36,6 +36,7 @@ const PdfEditor = () => {
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
+  const [analysisCompleted, setAnalysisCompleted] = useState(false);
   
   // API key state
   const [keysConfigured, setKeysConfigured] = useState(false);
@@ -145,10 +146,12 @@ const PdfEditor = () => {
     setIsAnalyzing(true);
     setShowAnalysisPanel(true);
     setAnalysisResult(null);
+    setAnalysisCompleted(false);
 
     try {
       const result = await analyzeText(selectedText);
       setAnalysisResult(result.analysis);
+      setAnalysisCompleted(true);
       toast.success('Text analysis completed');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -360,12 +363,21 @@ const PdfEditor = () => {
                         onChange={handleTextAreaChange}
                         onClick={(e) => e.stopPropagation()} // Prevent selection loss
                         placeholder="Paste or type the text you want to analyze..."
-                        className="min-h-[120px]"
+                        className="min-h-[100px]"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <p className="text-sm font-medium">Analysis Result</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">Analysis Result</p>
+                        {analysisCompleted && (
+                          <div className="flex items-center text-green-600 text-xs">
+                            <CheckCircle className="h-3.5 w-3.5 mr-1" />
+                            Text analysis completed
+                          </div>
+                        )}
+                      </div>
+                      
                       {isAnalyzing ? (
                         <div className="p-4 text-center">
                           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2" />
