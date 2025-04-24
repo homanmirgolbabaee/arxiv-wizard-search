@@ -46,8 +46,7 @@ Turn any webpage into interactive flash cards for better learning:
 ### API Key Setup
 
 This application requires API keys to function properly:
-
-1. **Toolhouse API Key** - For AI-powered analysis and quiz generation
+1. **Toolhouse API Key** - For AI-powered analysis and quiz generation. [Get Your Toolhouse API Key](https://app.toolhouse.ai/settings/api-keys).
 2. **OpenAI API Key** - For the underlying AI models
 3. **ElevenLabs API Key** (Optional) - For high-quality text-to-speech
 
