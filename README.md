@@ -46,13 +46,13 @@ Turn any webpage into interactive flash cards for better learning:
 ### API Key Setup
 
 This application requires API keys to function properly:
-1. **Toolhouse API Key** - For AI-powered analysis and quiz generation. [Get Your Toolhouse API Key](https://app.toolhouse.ai/settings/api-keys).
-2. **OpenAI API Key** - For the underlying AI models
-3. **ElevenLabs API Key** (Optional) - For high-quality text-to-speech
+1. **Toolhouse API Key** - For AI-powered analysis and quiz generation.[Get Your Toolhouse API Key](https://app.toolhouse.ai/settings/api-keys)
+2. **OpenAI API Key** - For the underlying AI models.[Get Your OpenAI API Key](https://platform.openai.com/api-keys)
+3. **ElevenLabs API Key** (Optional) - For high-quality text-to-speech.[Get Your Elevenlabs API Key](https://elevenlabs.io/app/settings/api-keys)
 
 You'll be prompted to enter these keys when you first use the application. They are stored securely in your browser's local storage.
 
-### Using ArXiv Search
+### How to use ArXiv Search
 
 1. Select the "ArXiv" tab on the home page
 2. Enter search terms in the search box
@@ -60,7 +60,7 @@ You'll be prompted to enter these keys when you first use the application. They 
 4. Click "Go to Editor" on any paper to analyze it
 5. Select text in the PDF to analyze with AI
 
-### Using URL Quiz Generator
+### How to use URL Quiz Generator
 
 1. Select the "URL" tab on the home page
 2. Enter any webpage URL
