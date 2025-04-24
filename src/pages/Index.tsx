@@ -71,7 +71,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex justify-between items-center">
             <div className="flex-1"></div>
-            <h1 className="text-2xl font-bold text-center flex-1">PDF Search & Viewer</h1>
+            <h1 className="text-2xl font-bold text-center flex-1">Learn From ...</h1>
             <div className="flex-1 flex justify-end">
               <Button
                 variant="ghost"
@@ -146,7 +146,7 @@ const Index = () => {
       
       <footer className="py-6 border-t mt-auto">
         <div className="container mx-auto px-4 text-center text-sm text-gray-500">
-          PDF Search & Viewer | {mode === 'arxiv' ? 'ArXiv Database' : 'External URLs'} | AI Provider: {aiProvider === 'openai' ? 'OpenAI' : 'Anthropic'}
+          Powered by Toolhouse x Elevenlabs
         </div>
       </footer>
     </div>

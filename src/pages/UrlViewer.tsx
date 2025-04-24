@@ -284,7 +284,7 @@ const UrlViewer = () => {
       
       <footer className="py-6 border-t">
         <div className="container mx-auto px-4 text-center text-sm text-gray-500">
-          URL Quiz Generator | Created with OpenAI GPT
+          Toolhouse URL Quiz Generator 
         </div>
       </footer>
     </div>
