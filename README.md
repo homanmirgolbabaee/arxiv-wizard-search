@@ -8,14 +8,19 @@ A powerful learning tool that helps you digest academic papers and web content m
   - [ArXiv Research Assistant](#-arxiv-research-assistant)
   - [URL Quiz Generator](#-url-quiz-generator)
 - [Getting Started](#getting-started)
+  - [Installation](#installation)
   - [API Key Setup](#api-key-setup)
   - [Using ArXiv Search](#using-arxiv-search)
   - [Using URL Quiz Generator](#using-url-quiz-generator)
+- [Security Notes](#security-notes)
 - [Technology Stack](#technology-stack)
 - [Development](#development)
 - [License](#license)
 
-![ArXiv Wizard Search Demo](https://i.imgur.com/wVuQpJj.png)
+<p align="center" style="margin-bottom: 0;">
+  <img src="demo.gif" width="400">
+</p>
+<p align="center"><strong>Demo</strong></p>
 
 ## Features
 
@@ -43,14 +48,33 @@ Turn any webpage into interactive flash cards for better learning:
 
 ## Getting Started
 
+### Installation
+
+```sh
+# Clone the repository
+git clone <repository-url>
+
+# Navigate to the project directory
+cd arxiv-wizard-search
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
 ### API Key Setup
 
-This application requires API keys to function properly:
-1. **Toolhouse API Key** - For AI-powered analysis and quiz generation.[Get Your Toolhouse API Key](https://app.toolhouse.ai/settings/api-keys)
-2. **OpenAI API Key** - For the underlying AI models.[Get Your OpenAI API Key](https://platform.openai.com/api-keys)
-3. **ElevenLabs API Key** (Optional) - For high-quality text-to-speech.[Get Your Elevenlabs API Key](https://elevenlabs.io/app/settings/api-keys)
+**Important:** This application requires you to provide your own API keys. No keys are included with the code.
 
-You'll be prompted to enter these keys when you first use the application. They are stored securely in your browser's local storage.
+You'll need to configure the following API keys to use the full functionality:
+
+1. **Toolhouse API Key** - For AI-powered analysis and quiz generation. [Get Your Toolhouse API Key](https://app.toolhouse.ai/settings/api-keys)
+2. **OpenAI API Key** - For the underlying AI models. [Get Your OpenAI API Key](https://platform.openai.com/api-keys)
+3. **ElevenLabs API Key** (Optional) - For high-quality text-to-speech. [Get Your Elevenlabs API Key](https://elevenlabs.io/app/settings/api-keys)
+
+You'll be prompted to enter these keys when you first use the application. They are stored securely in your browser's local storage and are not transmitted to any server other than the respective API services.
 
 ### How to use ArXiv Search
 
@@ -66,6 +90,14 @@ You'll be prompted to enter these keys when you first use the application. They 
 2. Enter any webpage URL
 3. Click "Generate Quiz"
 4. Interact with the resulting flash cards to test your knowledge
+
+## Security Notes
+
+- This is a demonstration application for educational purposes
+- API keys are stored in your browser's localStorage/sessionStorage
+- No data is sent to any servers other than the API providers you configure
+- For production use, a backend service would provide better security for API key management
+- The application does not collect or store user data beyond the browser's local storage
 
 ## Technology Stack
 
