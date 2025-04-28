@@ -18,9 +18,11 @@ A powerful learning tool that helps you digest academic papers and web content m
 - [License](#license)
 
 <p align="center" style="margin-bottom: 0;">
-  <img src="demo.gif" width="400">
+  <a href="https://youtu.be/ozeE4vr104o" target="_blank">
+    <img src="https://img.youtube.com/vi/ozeE4vr104o/0.jpg" width="400" alt="Demo Video">
+  </a>
 </p>
-<p align="center"><strong>Demo</strong></p>
+<p align="center"><strong>Demo Video (Click to Watch)</strong></p>
 
 ## Features
 
