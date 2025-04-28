@@ -17,12 +17,13 @@ A powerful learning tool that helps you digest academic papers and web content m
 - [Development](#development)
 - [License](#license)
 
-<p align="center" style="margin-bottom: 0;">
+<p align="center" style="margin-bottom: 0; position: relative;">
   <a href="https://youtu.be/ozeE4vr104o" target="_blank">
     <img src="https://img.youtube.com/vi/ozeE4vr104o/0.jpg" width="400" alt="Demo Video">
+    <img src="https://raw.githubusercontent.com/SuperManito/Arcadia/main/img/video-play-button.png" width="68" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);" alt="Play Button">
   </a>
 </p>
-<p align="center"><strong>Demo Video (Click to Watch)</strong></p>
+<p align="center"><strong>Demo Video on Youtube(Click to Watch)</strong></p>
 
 ## Features
 
